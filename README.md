@@ -3,6 +3,6 @@
 
 ROS2-humble
 
--clone
--colcon build
+-clone open-autopilot <br>
+-colcon build <br>
 -run
