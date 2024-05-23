@@ -1,0 +1,271 @@
+<?xml version="1.0"?>
+<robot name="audibot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:property name="half_front_track_width" value="0.819" />
+  <xacro:property name="half_rear_track_width" value="0.8" />
+  <xacro:property name="half_wheelbase" value="1.326" />
+  <xacro:property name="spawn_y" value="0.00" />
+
+  <xacro:property name="wheel_radius" value="0.36" />
+  <xacro:property name="wheel_thickness" value="0.25" />
+  <xacro:property name="wheel_mass" value="40.0" />
+
+  <xacro:property name="body_mass" value="1620.0" />
+  <xacro:property name="body_width" value="${2*half_rear_track_width}" />
+  <xacro:property name="body_depth" value="${2*half_wheelbase + 0.8}" />
+  <xacro:property name="body_length" value="0.6" />
+
+  <material name="white">
+        <color rgba="1 1 1 1"/>
+    </material>
+
+    <material name="orange">
+        <color rgba="1 0.3 0.1 1"/>
+    </material>
+
+    <material name="blue">
+        <color rgba="0.2 0.2 1 1"/>
+    </material>
+
+
+  <xacro:macro name="inertial_box" params="mass x y z *origin">
+        <inertial>
+            <xacro:insert_block name="origin"/>
+            <mass value="${mass}" />
+            <inertia ixx="${(1/12) * mass * (y*y+z*z)}" ixy="0.0" ixz="0.0"
+                    iyy="${(1/12) * mass * (x*x+z*z)}" iyz="0.0"
+                    izz="${(1/12) * mass * (x*x+y*y)}" />
+        </inertial>
+    </xacro:macro>
+
+  <xacro:macro name="rear_wheel" params="name x y z flip" >
+    <link name="wheel_${name}" >
+      <visual>
+        <origin xyz="0 0 0" rpy="1.57079632679 ${flip * 3.1415926535} 0" />
+        <geometry>
+          <mesh filename="file://$(find car_description)/meshes/wheel.dae" scale="1 1 1" />
+        </geometry>
+      </visual>
+
+      <collision>
+        <geometry>
+          <cylinder radius="${wheel_radius}" length="${wheel_thickness}" />
+        </geometry>
+      </collision>
+
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="${wheel_mass}"/>
+        <inertia ixx="${wheel_mass/12*(3*wheel_radius*wheel_radius + wheel_thickness*wheel_thickness)}" ixy="0" ixz="0" iyy="${wheel_mass/12*(3*wheel_radius*wheel_radius + wheel_thickness*wheel_thickness)}" iyz="0" izz="${wheel_mass/2 * wheel_radius*wheel_radius}"/>
+      </inertial>
+
+    </link>
+    <joint name="wheel_${name}_joint" type="continuous" >
+      <parent link="base_link" />
+      <child link="wheel_${name}" />
+      <origin xyz="${x} ${y} ${z}" rpy="-1.57079632679 0 0" />
+      <axis xyz="0 0 1" />
+      <limit effort="100" velocity="100" />
+    </joint>
+  </xacro:macro>
+
+  <xacro:macro name="front_wheel" params="name x y z flip" >
+    <link name="wheel_${name}" >
+      <visual>
+        <origin xyz="0 0 0" rpy="1.57079632679 ${flip * pi} 0" />
+        <geometry>
+          <mesh filename="file://$(find car_description)/meshes/wheel.dae" scale="1 1 1" />
+        </geometry>
+      </visual>
+
+      <collision>
+        <geometry>
+          <cylinder radius="${wheel_radius}" length="${wheel_thickness}" />
+        </geometry>
+      </collision>
+
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="${wheel_mass}"/>
+        <inertia ixx="${wheel_mass/12*(3*wheel_radius*wheel_radius + wheel_thickness*wheel_thickness)}" ixy="0" ixz="0" iyy="${wheel_mass/12*(3*wheel_radius*wheel_radius + wheel_thickness*wheel_thickness)}" iyz="0" izz="${wheel_mass/2 * wheel_radius*wheel_radius}"/>
+      </inertial>
+    </link>
+
+    <link name="steer_${name}" >
+      <inertial>
+        <origin xyz="-0.013054 -0.0295 0" rpy="0 0 0"/>
+        <mass value="20.0"/>
+        <inertia ixx="2" ixy="0" ixz="0" iyy="2" iyz="0" izz="2"/>
+      </inertial>
+    </link>
+
+    <joint name="steer_${name}_joint" type="revolute" >
+      <parent link="base_link" />
+      <child link="steer_${name}" />
+      <origin xyz="${x} ${y} ${z}" rpy="0 0 0" />
+      <axis xyz="0 0 1" />
+      <limit upper="0.6" lower="-0.6" effort="100" velocity="100" />
+    </joint>
+
+    <joint name="wheel_${name}_joint" type="continuous" >
+      <parent link="steer_${name}" />
+      <child link="wheel_${name}" />
+      <origin xyz="0 0 0" rpy="-1.57079632679 0 0" />
+      <axis xyz="0 0 1" />
+      <limit effort="100" velocity="100" />
+    </joint>
+  </xacro:macro>
+
+  <link name="base_footprint">
+    <origin xyz="0 0 ${spawn_y}" rpy="0 0 0" />
+  </link>
+
+  <link name="base_link">
+    <visual>
+      <origin xyz="0.035 0 ${spawn_y+0.025}" rpy="0 0 0" />
+      <geometry>
+          <mesh filename="file://$(find car_description)/meshes/blue_body.dae" scale="1 1 1" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.035 0 ${spawn_y+0.025}" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="file://$(find car_description)/meshes/body_collision.stl" scale="1 1 1" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 ${spawn_y}" rpy="0 0 0"/>
+      <mass value="${body_mass}"/>
+      <inertia ixx="${body_mass/12 * (body_width*body_width + body_length*body_length)}" ixy="0" ixz="0" iyy="${body_mass/12 * (body_length*body_length + body_depth*body_depth)}" iyz="0" izz="${body_mass/12 * (body_width*body_width + body_depth*body_depth)}"/>
+    </inertial>
+  </link>
+
+  <link name="camera_link">
+    <origin xyz="${half_wheelbase+0.8} 0 ${wheel_radius}" rpy="1.5 0 0" />
+    <parent link="base_link"/>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 1.57079632679 0" />
+            <geometry>
+                <cylinder length=".09" radius="0.04" />
+            </geometry>
+            <material name="blue" />
+    </visual>
+    <collision>
+          <origin xyz="${half_wheelbase+0.8} 0 ${wheel_radius}" rpy="0 0 0" />
+            <geometry>
+                <box size="0.12 1.15 0.15" />
+            </geometry>
+    </collision>
+  </link>
+
+  <joint name="carmera_joint" type="fixed">
+    <origin xyz="${half_wheelbase+0.8} 0 ${wheel_radius}" rpy="0 0 0" />
+    <parent link="base_link"/>
+    <child link="camera_link"/>
+  </joint>
+
+
+
+  <joint name="base_link_joint" type="fixed">
+    <origin xyz="${half_wheelbase} 0 ${spawn_y+wheel_radius}" rpy="0 0 0"/>
+    <parent link="base_footprint"/>
+    <child link="base_link"/>
+  </joint>
+
+  <xacro:rear_wheel name="rl" x="${-half_wheelbase}" y="${half_rear_track_width}" z="${spawn_y}" flip="1" />
+  <xacro:rear_wheel name="rr" x="${-half_wheelbase}" y="${-half_rear_track_width}" z="${spawn_y}" flip="0" />
+  <xacro:front_wheel name="fl" x="${half_wheelbase}" y="${half_front_track_width}" z="${spawn_y}" flip="1" />
+  <xacro:front_wheel name="fr" x="${half_wheelbase}" y="${-half_front_track_width}" z="${spawn_y}" flip="0" />
+
+  <xacro:property name="wheel_friction" value="1.75" />
+  <gazebo reference="camera_link">
+        <sensor type="camera" name="my_camera">
+            <update_rate>20</update_rate>
+            <visualize>true</visualize>
+            <camera name="cam">
+                <horizontal_fov>1.3962634</horizontal_fov>
+                <image>
+                    <width>640</width>
+                    <height>480</height>
+                    <format>R8B8G8</format>
+                </image>
+                <clip>
+                    <near>0.02</near>
+                    <far>300</far>
+                </clip>
+                <noise>
+                    <type>gaussian</type>
+                    <mean>0.0</mean>
+                    <stddev>0.007</stddev>
+                </noise>
+            </camera>
+            <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+                <frame_name>camera_link_optical</frame_name>
+                <min_depth>0.1</min_depth>
+                <max_depth>500</max_depth>
+            </plugin>
+        </sensor>
+    </gazebo>
+
+
+  <gazebo reference="base_link" >
+    <mu1>0.5</mu1>
+    <mu2>0.5</mu2>
+  </gazebo>
+
+  <gazebo reference="wheel_fl" >
+    <mu1>${wheel_friction}</mu1>
+    <mu2>${wheel_friction}</mu2>
+  </gazebo>
+
+  <gazebo reference="wheel_fr" >
+    <mu1>${wheel_friction}</mu1>
+    <mu2>${wheel_friction}</mu2>
+  </gazebo>
+
+  <gazebo reference="wheel_rl" >
+    <mu1>${wheel_friction}</mu1>
+    <mu2>${wheel_friction}</mu2>
+  </gazebo>
+
+  <gazebo reference="wheel_rr" >
+    <mu1>${wheel_friction}</mu1>
+    <mu2>${wheel_friction}</mu2>
+  </gazebo>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="simple_car">
+  <ros2_control name="carbot" type="system">
+    <hardware>
+      <plugin>ros2_control_demo_example_11/CarlikeBotSystemHardware</plugin>
+      <param name="example_param_hw_start_duration_sec">0</param>
+      <param name="example_param_hw_stop_duration_sec">3.0</param>
+      <param name="is_simulation">1</param>
+    </hardware>
+    <joint name="wheel_fl_joint">
+      <command_interface name="position"/>
+      <state_interface name="position" />
+    </joint>
+    <joint name="wheel_fr_joint">
+      <command_interface name="position"/>
+      <state_interface name="position" />
+    </joint>
+    <joint name="wheel_rl_joint">
+      <command_interface name="position"/>
+      <state_interface name="position" />
+    </joint>
+    <joint name="wheel_rr_joint">
+      <command_interface name="position"/>
+      <state_interface name="position" />
+    </joint>
+  </ros2_control>
+  <gazebo>
+    <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
+      <parameters>$(find car_description)/config/controller/my_controllers.yaml</parameters>
+    </plugin>
+  </gazebo>
+</robot>
+
+
+
+
+</robot>

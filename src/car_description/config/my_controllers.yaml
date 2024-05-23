@@ -1,0 +1,13 @@
+controller_manager:
+  ros__parameters:
+    ackermann_steering_controller:
+      type: ackermann_steering_controller/AckermannSteeringController
+      ros__parameters:
+        front_wheel_track: 0.25
+        rear_wheel_track: 0.25
+        wheelbase: 1.0
+        front_wheels_radius: 0.36
+        rear_wheels_radius: 0.36
+        rear_wheels_names: [wheel_rl_joint, wheel_rr_joint]
+        front_wheels_names: [wheel_fl_joint, wheel_fr_joint]
+
