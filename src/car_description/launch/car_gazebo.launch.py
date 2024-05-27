@@ -32,7 +32,6 @@ def generate_launch_description():
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
             get_package_share_directory('gazebo_ros'), 'launch'), '/gazebo.launch.py']),
-        launch_arguments={'world': LaunchConfiguration('world')}.items(),
 
     )
 
@@ -46,6 +45,8 @@ def generate_launch_description():
 
     # Launch description
     return LaunchDescription([
+
+        robot_state_publisher_node,
         gazebo,
         spawn_entity,
 

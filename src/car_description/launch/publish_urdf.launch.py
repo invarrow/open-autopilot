@@ -4,7 +4,7 @@ import xacro
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.substitutions import Command
+from launch.substitutions import Command, LaunchConfiguration
 from launch_ros.actions import Node
 
 # this is the function launch  system will look for
@@ -27,7 +27,10 @@ def generate_launch_description():
         executable='robot_state_publisher',
         name='robot_state_publisher_node',
         emulate_tty=True,
-        parameters=[{'use_sim_time': True, 'robot_description': robot_desc_raw}],
+        parameters=[{'use_sim_time': True,
+                'frame_prefix': [LaunchConfiguration('audibot'), '/'],
+                'publish_frequency': LaunchConfiguration('tf_freq'),
+                     'robot_description': robot_desc_raw}],
         output="screen"
     )
 

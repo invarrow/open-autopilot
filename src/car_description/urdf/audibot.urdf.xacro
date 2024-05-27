@@ -27,6 +27,23 @@
         <color rgba="0.2 0.2 1 1"/>
     </material>
 
+  <gazebo>
+    <!-- Simulated vehicle interface -->
+    <plugin name="jarbay_plugin" filename="libjarbay_plugin.so" >
+    </plugin>
+
+    <!-- Publish current joint angles -->
+    <plugin name="joint_state_publisher" filename="libgazebo_ros_joint_state_publisher.so">
+        <joint_name>steer_fl_joint</joint_name>
+        <joint_name>steer_fr_joint</joint_name>
+        <joint_name>wheel_fl_joint</joint_name>
+        <joint_name>wheel_fr_joint</joint_name>
+        <joint_name>wheel_rl_joint</joint_name>
+        <joint_name>wheel_rr_joint</joint_name>
+        <update_rate>100</update_rate>
+    </plugin>
+  </gazebo>
+
 
   <xacro:macro name="inertial_box" params="mass x y z *origin">
         <inertial>
@@ -233,37 +250,6 @@
     <mu2>${wheel_friction}</mu2>
   </gazebo>
 
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="simple_car">
-  <ros2_control name="carbot" type="system">
-    <hardware>
-      <plugin>ros2_control_demo_example_11/CarlikeBotSystemHardware</plugin>
-      <param name="example_param_hw_start_duration_sec">0</param>
-      <param name="example_param_hw_stop_duration_sec">3.0</param>
-      <param name="is_simulation">1</param>
-    </hardware>
-    <joint name="wheel_fl_joint">
-      <command_interface name="position"/>
-      <state_interface name="position" />
-    </joint>
-    <joint name="wheel_fr_joint">
-      <command_interface name="position"/>
-      <state_interface name="position" />
-    </joint>
-    <joint name="wheel_rl_joint">
-      <command_interface name="position"/>
-      <state_interface name="position" />
-    </joint>
-    <joint name="wheel_rr_joint">
-      <command_interface name="position"/>
-      <state_interface name="position" />
-    </joint>
-  </ros2_control>
-  <gazebo>
-    <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
-      <parameters>$(find car_description)/config/controller/my_controllers.yaml</parameters>
-    </plugin>
-  </gazebo>
-</robot>
 
 
 
