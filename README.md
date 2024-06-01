@@ -13,7 +13,5 @@ ROS2-humble
 
 
 Demo:
-<video width="600" controls>
-  <source src="./media/stereo.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+https://github.com/invarrow/open-autopilot/assets/39548998/9ea14633-8c0d-4910-a6ac-bbb2b68222c8
+
