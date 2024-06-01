@@ -10,6 +10,8 @@
   <xacro:property name="wheel_thickness" value="0.25" />
   <xacro:property name="wheel_mass" value="40.0" />
 
+  <xacro:property name="delta" value="0.12" />
+
   <xacro:property name="body_mass" value="1620.0" />
   <xacro:property name="body_width" value="${2*half_rear_track_width}" />
   <xacro:property name="body_depth" value="${2*half_wheelbase + 0.8}" />
@@ -43,6 +45,35 @@
         <update_rate>100</update_rate>
     </plugin>
   </gazebo>
+
+  <!-- <xacro:rear_wheel name="rl" x="${-half_wheelbase}" y="${half_rear_track_width}" z="${spawn_y}" flip="1" /> -->
+
+  <xacro:macro name="stereo_cam" params="num x y z r p y *origin">
+    <link name="camera_link_${num}">
+    <origin xyz="${half_wheelbase+0.8} ${-delta} ${wheel_radius}" rpy="1.5 0 0" />
+    <parent link="base_link"/>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 1.57079632679 0" />
+            <geometry>
+                <cylinder length=".09" radius="0.04" />
+            </geometry>
+            <material name="blue" />
+    </visual>
+    <collision>
+          <origin xyz="${half_wheelbase+0.8} ${delta} ${wheel_radius}" rpy="0 0 0" />
+            <geometry>
+                <box size="0.12 1.15 0.15" />
+            </geometry>
+    </collision>
+  </link>
+
+  <joint name="carmera_joint_{num}" type="fixed">
+    <origin xyz="${half_wheelbase+0.8} ${-delta} ${wheel_radius}" rpy="0 0 0" />
+    <parent link="base_link"/>
+    <child link="camera_link_{num}"/>
+  </joint>
+    </xacro:macro>
+
 
 
   <xacro:macro name="inertial_box" params="mass x y z *origin">
@@ -157,8 +188,8 @@
     </inertial>
   </link>
 
-  <link name="camera_link">
-    <origin xyz="${half_wheelbase+0.8} 0 ${wheel_radius}" rpy="1.5 0 0" />
+  <link name="camera_link_2">
+    <origin xyz="${half_wheelbase+0.8} ${delta} ${wheel_radius}" rpy="1.5 0 0" />
     <parent link="base_link"/>
     <visual>
       <origin xyz="0 0 0" rpy="0 1.57079632679 0" />
@@ -168,19 +199,42 @@
             <material name="blue" />
     </visual>
     <collision>
-          <origin xyz="${half_wheelbase+0.8} 0 ${wheel_radius}" rpy="0 0 0" />
+      <origin xyz="${half_wheelbase+0.8} ${delta} ${wheel_radius}" rpy="0 0 0" />
             <geometry>
                 <box size="0.12 1.15 0.15" />
             </geometry>
     </collision>
   </link>
 
-  <joint name="carmera_joint" type="fixed">
-    <origin xyz="${half_wheelbase+0.8} 0 ${wheel_radius}" rpy="0 0 0" />
+  <link name="camera_link_1">
+    <origin xyz="${half_wheelbase+0.8} ${-delta} ${wheel_radius}" rpy="1.5 0 0" />
     <parent link="base_link"/>
-    <child link="camera_link"/>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 1.57079632679 0" />
+            <geometry>
+                <cylinder length=".09" radius="0.04" />
+            </geometry>
+            <material name="blue" />
+    </visual>
+    <collision>
+          <origin xyz="${half_wheelbase+0.8} ${delta} ${wheel_radius}" rpy="0 0 0" />
+            <geometry>
+                <box size="0.12 1.15 0.15" />
+            </geometry>
+    </collision>
+  </link>
+
+  <joint name="carmera_joint_1" type="fixed">
+    <origin xyz="${half_wheelbase+0.8} ${-delta} ${wheel_radius}" rpy="0 0 0" />
+    <parent link="base_link"/>
+    <child link="camera_link_1"/>
   </joint>
 
+  <joint name="carmera_joint_2" type="fixed">
+    <origin xyz="${half_wheelbase+0.8} ${delta} ${wheel_radius}" rpy="0 0 0" />
+    <parent link="base_link"/>
+    <child link="camera_link_2"/>
+  </joint>
 
 
   <joint name="base_link_joint" type="fixed">
@@ -195,8 +249,8 @@
   <xacro:front_wheel name="fr" x="${half_wheelbase}" y="${-half_front_track_width}" z="${spawn_y}" flip="0" />
 
   <xacro:property name="wheel_friction" value="1.75" />
-  <gazebo reference="camera_link">
-        <sensor type="camera" name="my_camera">
+  <gazebo reference="camera_link_2">
+        <sensor type="camera" name="my_camera_2">
             <update_rate>20</update_rate>
             <visualize>true</visualize>
             <camera name="cam">
@@ -216,7 +270,36 @@
                     <stddev>0.007</stddev>
                 </noise>
             </camera>
-            <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+            <plugin name="camera_controller_2" filename="libgazebo_ros_camera.so">
+                <frame_name>camera_link_optical</frame_name>
+                <min_depth>0.1</min_depth>
+                <max_depth>500</max_depth>
+            </plugin>
+        </sensor>
+    </gazebo>
+
+  <gazebo reference="camera_link_1">
+        <sensor type="camera" name="my_camera_1">
+            <update_rate>20</update_rate>
+            <visualize>true</visualize>
+            <camera name="cam">
+                <horizontal_fov>1.3962634</horizontal_fov>
+                <image>
+                    <width>640</width>
+                    <height>480</height>
+                    <format>R8B8G8</format>
+                </image>
+                <clip>
+                    <near>0.02</near>
+                    <far>300</far>
+                </clip>
+                <noise>
+                    <type>gaussian</type>
+                    <mean>0.0</mean>
+                    <stddev>0.007</stddev>
+                </noise>
+            </camera>
+            <plugin name="camera_controller_1" filename="libgazebo_ros_camera.so">
                 <frame_name>camera_link_optical</frame_name>
                 <min_depth>0.1</min_depth>
                 <max_depth>500</max_depth>

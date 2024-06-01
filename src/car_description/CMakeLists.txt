@@ -32,6 +32,7 @@ install(
     include
     worlds
     plugins
+    scripts
   DESTINATION
     share/${PROJECT_NAME}/
 )
