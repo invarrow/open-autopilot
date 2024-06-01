@@ -27,6 +27,7 @@ endif()
 install(
   DIRECTORY
     meshes
+    data_road
     urdf
     launch
     include
@@ -41,4 +42,8 @@ install(
   PROGRAMS
   DESTINATION lib/${PROJECT_NAME}/
 )
+install(
+  PROGRAMS
+  scripts/stereo_cam.py
+  DESTINATION lib/${PROJECT_NAME})
 ament_package()
