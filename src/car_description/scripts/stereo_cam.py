@@ -112,7 +112,7 @@ class occupancy_marker(Node):
         self.marker_array = MarkerArray()
 
         self.count = 0
-        self.markers_max = 2500
+        self.markers_max = 1500
 
         self.points = self.generate_points()
 
@@ -130,8 +130,6 @@ class occupancy_marker(Node):
         return points
 
     def process_occupancy(self):
-        shape = plain(self.cv_image_1,1)
-        shape = plain(self.cv_image_2,2)
 
         self.out_points, self.out_colors = points_reconstruction(self.cv_image_1, self.bw_image_1, self.bw_image_2)
         marker_id = 0
@@ -139,21 +137,21 @@ class occupancy_marker(Node):
 
         for x in range(self.out_points.shape[0]):
                 tvec = self.out_points[x]
-                xa = tvec[0]
-                ya = -tvec[2]
+                xa = -tvec[2]
+                ya = -tvec[0]
                 za = tvec[1]
 
-                if math.sqrt(xa**2 + ya**2 + za**2) > 0.5:
+
+                if math.sqrt(xa**2 + ya**2 + za**2) > 1.5:
                     continue
 
                 marker = Marker()
-                marker.header.frame_id = "camera_link_1"
-                marker.header.time_stamp = self.get_clock().now().to_msg()
-                marker.type = Marker.SPHERE_LIST
+                marker.header.frame_id = "camera_link_2"
+                marker.type = Marker.SPHERE
                 marker.action = Marker.ADD
-                marker.scale.x = 0.001
-                marker.scale.y = 0.001
-                marker.scale.z = 0.001
+                marker.scale.x = 0.1
+                marker.scale.y = 0.1
+                marker.scale.z = 0.1
                 marker.color.a = 1.0
 
                 r,g,b = self.out_colors[x]
@@ -162,31 +160,18 @@ class occupancy_marker(Node):
                 marker.color.g = g/255
                 marker.color.b = b/255
 
-
-                marker.pose.orientation.w = 1.0
                 marker.pose.position.x = xa
                 marker.pose.position.y = ya
                 marker.pose.position.z = za
                 marker.id = marker_id
                 marker_id += 1
 
-                marker.points = list()
-
-                for point in self.points:
-                    p = Point()
-                    p.x, p.y, p.z = point
-                    marker.points.append(p)
-
-                #if self.count > self.markers_max:
-                #    self.marker_array.markers.pop(0)
-
+                if self.count > self.markers_max:
+                    self.marker_array.markers.pop(0)
 
                 self.marker_array.markers.append(marker)
                 self.count += 1
 
-        # Renumber the marker IDs
-        for i, m in enumerate(self.marker_array.markers):
-            m.id = i
 
         self.publisher.publish(self.marker_array)
 
