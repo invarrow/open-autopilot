@@ -112,7 +112,7 @@ class occupancy_marker(Node):
         self.marker_array = MarkerArray()
 
         self.count = 0
-        self.markers_max = 1500
+        self.markers_max = 4500
 
         self.points = self.generate_points()
 
@@ -134,6 +134,7 @@ class occupancy_marker(Node):
         self.out_points, self.out_colors = points_reconstruction(self.cv_image_1, self.bw_image_1, self.bw_image_2)
         marker_id = 0
         print(len(self.out_points))
+        self.marker_array.markers = []
 
         for x in range(self.out_points.shape[0]):
                 tvec = self.out_points[x]
@@ -142,16 +143,16 @@ class occupancy_marker(Node):
                 za = tvec[1]
 
 
-                if math.sqrt(xa**2 + ya**2 + za**2) > 1.5:
-                    continue
+                #if math.sqrt(xa**2 + ya**2 + za**2) > 1.5:
+                #    continue
 
                 marker = Marker()
                 marker.header.frame_id = "camera_link_2"
                 marker.type = Marker.SPHERE
                 marker.action = Marker.ADD
-                marker.scale.x = 0.1
-                marker.scale.y = 0.1
-                marker.scale.z = 0.1
+                marker.scale.x = 0.01
+                marker.scale.y = 0.01
+                marker.scale.z = 0.01
                 marker.color.a = 1.0
 
                 r,g,b = self.out_colors[x]
@@ -166,13 +167,15 @@ class occupancy_marker(Node):
                 marker.id = marker_id
                 marker_id += 1
 
-                if self.count > self.markers_max:
-                    self.marker_array.markers.pop(0)
-
                 self.marker_array.markers.append(marker)
+
+                #if self.count > self.markers_max:
+                #    self.marker_array.markers.pop(0)
+
                 self.count += 1
 
 
+        print(len(self.marker_array.markers))
         self.publisher.publish(self.marker_array)
 
         print("procesing")
